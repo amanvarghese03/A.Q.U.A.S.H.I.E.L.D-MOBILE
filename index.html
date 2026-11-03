@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070B10">
+<title>Project A.Q.U.A.S.H.I.E.L.D. | Mobile SCADA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet" />
+<style>
+/* ===== A.Q.U.A.S.H.I.E.L.D. SCADA THEME ===== */
+#aqua *{box-sizing:border-box;margin:0;padding:0}
+#aqua{
+  --bg:#070B10; --panel:#0E151D; --panel2:#121C27; --line:#1E2B38;
+  --text:#D7E3EC; --dim:#6F8497;
+  --cyan:#19E3FF; --green:#2BFF88; --amber:#FFB020; --red:#FF2D55;
+  --accent:var(--green);
+  --head:'Chakra Petch','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  background:var(--bg);color:var(--text);font-family:var(--head);
+  max-width:520px;margin:0 auto;min-height:100vh;
+  padding:max(14px,env(safe-area-inset-top)) 14px max(80px,env(safe-area-inset-bottom));
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;background-position:-1px -1px;
+}
+#aqua[data-state="0"]{--accent:var(--green)}
+#aqua[data-state="1"]{--accent:var(--amber)}
+#aqua[data-state="2"]{--accent:var(--red)}
+
+/* Header */
+#aqua .hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+#aqua h1{font-size:1.02rem;font-weight:700;letter-spacing:.06em;line-height:1.2;color:#fff}
+#aqua .sub{font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-top:4px}
+#aqua .badge{flex:none;display:flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line);
+  background:var(--panel);border-radius:999px;font-family:var(--mono);font-size:.68rem;font-weight:600}
+#aqua .dot{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+#aqua .badge.on{color:var(--green);border-color:rgba(43,255,136,.4)}
+#aqua .badge.on .dot{background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.4s infinite}
+#aqua .badge.off{color:var(--red);border-color:rgba(255,45,85,.4)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(43,255,136,.7)}100%{box-shadow:0 0 0 9px rgba(43,255,136,0)}}
+
+/* Views / Tabs */
+.view { display: none; }
+.view.active { display: block; }
+
+/* Status banner */
+#aqua .banner{position:relative;border:1px solid var(--accent);border-radius:6px;padding:18px 16px;margin-bottom:12px;
+  background:#0A2A18;overflow:hidden;transition:background .4s,border-color .4s}
+#aqua[data-state="1"] .banner{background:#33260A}
+#aqua[data-state="2"] .banner{background:#3A0A16;animation:alarm 1s infinite alternate}
+@keyframes alarm{to{box-shadow:0 0 26px rgba(255,45,85,.55)}}
+#aqua .banner .code{font-family:var(--mono);font-size:.68rem;color:var(--accent);opacity:.85}
+#aqua .banner .big{font-size:1.7rem;font-weight:700;color:var(--accent);margin:4px 0 2px;letter-spacing:.03em;text-shadow:0 0 14px var(--accent)}
+#aqua .banner .detail{font-size:.9rem;color:var(--text)}
+#aqua .banner .ts{font-family:var(--mono);font-size:.62rem;color:var(--dim);margin-top:10px}
+
+/* Metric cards */
+#aqua .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+#aqua .card{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--cyan);border-radius:4px;padding:12px}
+#aqua .card.wide{grid-column:1/-1}
+#aqua .lbl{font-size:.72rem;color:var(--dim);font-weight:600;letter-spacing:.04em}
+#aqua .val{font-family:var(--mono);font-size:1.75rem;font-weight:700;color:#fff;margin-top:6px;line-height:1}
+#aqua .val small{font-size:.78rem;color:var(--cyan);font-weight:400;margin-left:3px}
+#aqua .bar{height:7px;background:#05080C;border:1px solid var(--line);border-radius:2px;margin-top:10px;overflow:hidden}
+#aqua .bar i{display:block;height:100%;width:0;background:var(--cyan);box-shadow:0 0 8px var(--cyan);transition:width .6s,background .4s}
+#aqua .bar i.hi{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+#aqua .bar i.crit{background:var(--red);box-shadow:0 0 8px var(--red)}
+#aqua .hint{font-family:var(--mono);font-size:.62rem;color:var(--dim);margin-top:8px}
+#aqua .val.rise{color:var(--amber)}
+#aqua .val.eta{color:var(--accent)}
+
+/* Control panel & Settings / About cards */
+#aqua .panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;margin-bottom:12px}
+#aqua .panel h2{font-size:.85rem;font-weight:600;color:var(--cyan);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+#aqua .panel p{font-size:.85rem;color:var(--text);line-height:1.4;margin-bottom:8px}
+#aqua .panel ul{margin-left:18px;margin-bottom:8px;font-size:.82rem;color:var(--dim)}
+#aqua .panel li{margin-bottom:4px}
+#aqua .mode{font-family:var(--mono);color:var(--cyan);font-weight:600}
+
+#aqua .btn{display:block;width:100%;min-height:56px;margin-top:10px;border-radius:6px;font-family:var(--head);
+  font-size:1.02rem;font-weight:700;letter-spacing:.04em;cursor:pointer;border:2px solid;background:transparent;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;transition:transform .08s,background .2s}
+#aqua .btn:active{transform:scale(.98)}
+#aqua .btn.red{color:var(--red);border-color:var(--red);background:rgba(255,45,85,.1)}
+#aqua .btn.red:active,#aqua .btn.red.armed{background:var(--red);color:#fff}
+#aqua .btn.green{color:var(--green);border-color:var(--green);background:rgba(43,255,136,.08)}
+#aqua .btn.green:active{background:var(--green);color:#041109}
+#aqua .btn.cyan{color:var(--cyan);border-color:var(--cyan);background:rgba(25,227,255,.08)}
+#aqua .btn:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+#aqua .log{font-family:var(--mono);font-size:.64rem;color:var(--dim);margin-top:12px;border-top:1px solid var(--line);padding-top:8px;min-height:2.6em}
+
+/* Form controls in settings */
+#aqua label{display:block;font-size:.75rem;color:var(--dim);margin-top:10px;margin-bottom:4px;font-family:var(--mono)}
+#aqua select, #aqua input{width:100%;background:var(--bg);border:1px solid var(--line);color:#fff;padding:10px;border-radius:4px;font-family:var(--mono);font-size:.85rem}
+
+/* Bottom Navigation Bar */
+#aqua .nav-bar{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;background:var(--panel2);border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;padding:10px 0 env(safe-area-inset-bottom);z-index:100}
+#aqua .nav-item{background:none;border:none;color:var(--dim);font-family:var(--head);font-size:.72rem;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 12px;transition:color .2s}
+#aqua .nav-item svg{width:20px;height:20px;fill:currentColor}
+#aqua .nav-item.active{color:var(--cyan)}
+</style>
+</head>
+<body style="margin:0;background:#070B10">
+<div id="aqua" data-state="0">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div>
+      <h1>PROJECT A.Q.U.A.S.H.I.E.L.D.</h1>
+      <div class="sub">Mobile SCADA Telemetry &amp; Control</div>
+    </div>
+    <div class="badge off" id="conn"><span class="dot"></span><span id="connTxt">Disconnected</span></div>
+  </div>
+
+  <!-- VIEW 1: DASHBOARD -->
+  <div id="view-dashboard" class="view active">
+    <!-- STATUS BANNER -->
+    <div class="banner">
+      <div class="code" id="bCode">STATE 0</div>
+      <div class="big" id="bTitle">SAFE</div>
+      <div class="detail" id="bDetail">Soil Dry / Normal Capacity</div>
+      <div class="ts" id="bTs">Awaiting telemetry...</div>
+    </div>
+
+    <!-- METRIC CARDS -->
+    <div class="grid">
+      <div class="card wide">
+        <div class="lbl">Soil saturation</div>
+        <div class="val"><span id="soil">--</span><small>%</small></div>
+        <div class="bar"><i id="soilBar"></i></div>
+      </div>
+      <div class="card">
+        <div class="lbl">Water depth</div>
+        <div class="val"><span id="depth">--</span><small>cm</small></div>
+      </div>
+      <div class="card">
+        <div class="lbl">Basin volume</div>
+        <div class="val"><span id="vol">--</span><small>mL</small></div>
+      </div>
+      <div class="card">
+        <div class="lbl">Influx rate</div>
+        <div class="val" id="rateWrap"><span id="rate">--</span><small>cm/s</small></div>
+      </div>
+      <div class="card">
+        <div class="lbl">ETA to critical</div>
+        <div class="val eta" id="eta">--:--</div>
+        <div class="hint" id="etaHint">Water not rising</div>
+      </div>
+    </div>
+
+    <!-- CONTROL PANEL -->
+    <div class="panel">
+      <h2><span>Remote override</span><span class="mode" id="mode">AUTO AI</span></h2>
+      <button class="btn red" id="btnForce" type="button">FORCE CLOSE GATE / PUMP ON</button>
+      <button class="btn green" id="btnAuto" type="button">RESET TO AUTO AI</button>
+      <div class="log" id="log">No commands sent.</div>
+    </div>
+  </div>
+
+  <!-- VIEW 2: ABOUT US -->
+  <div id="view-about" class="view">
+    <div class="panel">
+      <h2>System Overview</h2>
+      <p><strong>Project A.Q.U.A.S.H.I.E.L.D.</strong> (Automated Flood Alerting and Soil Saturation Management System) is an advanced physical computing and software framework designed to prevent urban and localized flooding through predictive AI modeling, real-time sensor fusion, and automated drainage control.</p>
+    </div>
+    <div class="panel">
+      <h2>Developer &amp; Team</h2>
+      <p><strong>Developer:</strong> Aman Varghese</p>
+      <p><strong>Institution:</strong> Class XI-B, UIS</p>
+      <p><strong>Project Mentor:</strong> Mr. Philip Varghese</p>
+      <p style="margin-top:10px;color:var(--dim);font-size:.78rem;">Features a multi-threaded Python PyQt5 SCADA desktop engine linked via serial to an Arduino microcontroller, supported by remote mobile telemetry web views.</p>
+    </div>
+  </div>
+
+  <!-- VIEW 3: SETTINGS -->
+  <div id="view-settings" class="view">
+    <div class="panel">
+      <h2>Telemetry Source Config</h2>
+      <label for="dataSource">Connection Mode</label>
+      <select id="dataSource">
+        <option value="mock">Simulation Mode (Mock Data)</option>
+        <option value="websocket">WebSocket Stream (WSS)</option>
+        <option value="poll">HTTP REST Polling</option>
+      </select>
+
+      <label for="serverUrl">Endpoint URL / IP</label>
+      <input type="text" id="serverUrl" value="https://YOUR-SERVER/api/telemetry" />
+
+      <button class="btn cyan" id="btnSaveSettings" type="button" style="margin-top:16px;">APPLY &amp; RECONNECT</button>
+      <div class="log" id="settingsLog" style="margin-top:10px;">Configuration active.</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="nav-bar">
+    <button class="nav-item active" onclick="switchView('dashboard', this)">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" onclick="switchView('about', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      About Us
+    </button>
+    <button class="nav-item" onclick="switchView('settings', this)">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.04.64.09.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      Settings
+    </button>
+  </nav>
+</div>
+
+<script>
+var CONFIG = {
+  SOURCE: 'mock',
+  WS_URL: 'wss://YOUR-SERVER/telemetry',
+  POLL_URL: 'https://YOUR-SERVER/api/telemetry',
+  POLL_MS: 2000,
+  COMMAND_URL: 'https://YOUR-SERVER/api/command',
+  CRITICAL_DEPTH_CM: 8.0,
+  STALE_MS: 6000
+};
+
+var $ = function (id) { return document.getElementById(id); };
+var root = $('aqua'), lastPacket = 0, ws = null;
+
+var STATES = {
+  0: { code: 'STATE 0', title: 'SAFE', detail: 'Soil Dry / Normal Capacity' },
+  1: { code: 'STATE 1', title: 'WARNING', detail: 'Influx Detected | Precursor Alert' },
+  2: { code: 'STATE 2', title: 'CRITICAL FLOOD', detail: 'Barrier Deployed / Pump Active' }
+};
+
+function switchView(viewName, btn) {
+  var views = document.querySelectorAll('.view');
+  for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+  var items = document.querySelectorAll('.nav-item');
+  for (var j = 0; j < items.length; j++) items[j].classList.remove('active');
+
+  document.getElementById('view-' + viewName).classList.add('active');
+  btn.classList.add('active');
+}
+
+function setConnection(on) {
+  $('conn').className = 'badge ' + (on ? 'on' : 'off');
+  $('connTxt').textContent = on ? 'Connected' : 'Disconnected';
+}
+
+function fmtEta(sec) {
+  var m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+  return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function applyTelemetry(d) {
+  lastPacket = Date.now();
+  setConnection(true);
+
+  var st = (d.state === 1 || d.state === 2) ? d.state : 0;
+  root.setAttribute('data-state', st);
+  $('bCode').textContent = STATES[st].code;
+  $('bTitle').textContent = STATES[st].title;
+  $('bDetail').textContent = STATES[st].detail;
+  $('bTs').textContent = 'Last packet ' + new Date().toLocaleTimeString();
+
+  var soil = Math.max(0, Math.min(100, +d.soil_pct || 0));
+  $('soil').textContent = soil.toFixed(1);
+  var bar = $('soilBar');
+  bar.style.width = soil + '%';
+  bar.className = soil >= 85 ? 'crit' : soil >= 60 ? 'hi' : '';
+
+  $('depth').textContent = (+d.depth_cm || 0).toFixed(1);
+  $('vol').textContent = Math.round(+d.volume_ml || 0);
+
+  var rate = +d.influx_cms || 0;
+  $('rate').textContent = (rate >= 0 ? '+' : '') + rate.toFixed(2);
+  $('rateWrap').className = 'val' + (rate > 0.05 ? ' rise' : '');
+
+  var eta = d.eta_s;
+  if (eta == null && rate > 0) eta = (CONFIG.CRITICAL_DEPTH_CM - d.depth_cm) / rate;
+  if (st === 2) {
+    $('eta').textContent = '00:00'; $('etaHint').textContent = 'Critical level reached';
+  } else if (rate > 0 && eta > 0) {
+    $('eta').textContent = fmtEta(eta); $('etaHint').textContent = 'Water rising';
+  } else {
+    $('eta').textContent = '--:--'; $('etaHint').textContent = 'Water not rising';
+  }
+
+  if (d.mode) $('mode').textContent = d.mode === 'MANUAL' ? 'MANUAL OVERRIDE' : 'AUTO AI';
+}
+
+function log(msg) { $('log').textContent = new Date().toLocaleTimeString() + '  ' + msg; }
+
+function sendCommand(cmd) {
+  if (navigator.vibrate) navigator.vibrate(40);
+  if (CONFIG.SOURCE === 'mock') {
+    mock.manual = (cmd === 'FORCE_CLOSE');
+    $('mode').textContent = mock.manual ? 'MANUAL OVERRIDE' : 'AUTO AI';
+    log('[MOCK] ' + cmd + ' sent');
+    return;
+  }
+  if (CONFIG.SOURCE === 'websocket' && ws && ws.readyState === 1) {
+    ws.send(JSON.stringify({ cmd: cmd }));
+    log(cmd + ' sent via WebSocket');
+    return;
+  }
+  fetch(CONFIG.COMMAND_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cmd: cmd })
+  }).then(function (r) { log(cmd + (r.ok ? ' acknowledged' : ' failed (' + r.status + ')')); })
+    .catch(function () { log(cmd + ' failed: network error'); });
+}
+
+var forceTimer = null;
+$('btnForce').addEventListener('click', function () {
+  var b = this;
+  if (!b.classList.contains('armed')) {
+    b.classList.add('armed'); b.textContent = 'TAP AGAIN TO CONFIRM';
+    forceTimer = setTimeout(disarm, 3000); return;
+  }
+  clearTimeout(forceTimer); disarm(); sendCommand('FORCE_CLOSE');
+});
+function disarm() { var b = $('btnForce'); b.classList.remove('armed'); b.textContent = 'FORCE CLOSE GATE / PUMP ON'; }
+$('btnAuto').addEventListener('click', function () { sendCommand('AUTO'); });
+
+/* Settings form handler */
+$('btnSaveSettings').addEventListener('click', function () {
+  CONFIG.SOURCE = $('dataSource').value;
+  var url = $('serverUrl').value;
+  if (CONFIG.SOURCE === 'websocket') CONFIG.WS_URL = url;
+  else if (CONFIG.SOURCE === 'poll') CONFIG.POLL_URL = url;
+  $('settingsLog').textContent = 'Updated source to: ' + CONFIG.SOURCE;
+});
+
+/* Mock simulator */
+var mock = { t: 0, manual: false };
+function startMock() {
+  setInterval(function () {
+    if (CONFIG.SOURCE !== 'mock') return;
+    mock.t = (mock.t + 1) % 60;
+    var t = mock.t, depth, rate, soil, st;
+    if (t < 20)      { depth = 0.4 + t * 0.02; rate = 0.0;  soil = 22 + t * 0.5; }
+    else if (t < 42) { depth = 0.8 + (t - 20) * 0.32; rate = 0.32; soil = 32 + (t - 20) * 2.2; }
+    else             { depth = 7.8 - (t - 42) * 0.4; rate = -0.4; soil = 80 - (t - 42) * 2; }
+    if (mock.manual) { st = 2; rate = Math.min(rate, 0); }
+    else st = depth >= CONFIG.CRITICAL_DEPTH_CM * 0.9 || (t >= 36 && t < 46) ? 2 : (rate > 0.05 ? 1 : 0);
+    applyTelemetry({
+      state: st, soil_pct: soil, depth_cm: Math.max(0, depth),
+      volume_ml: Math.max(0, depth) * 180, influx_cms: rate,
+      mode: mock.manual ? 'MANUAL' : 'AUTO'
+    });
+  }, 1000);
+}
+
+/* Watchdog */
+setInterval(function () {
+  if (CONFIG.SOURCE === 'mock') return;
+  if (lastPacket && Date.now() - lastPacket > CONFIG.STALE_MS) setConnection(false);
+}, 1000);
+
+startMock();
+</script>
+</body>
+</html>
